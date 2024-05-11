@@ -59,31 +59,26 @@ public class TextInput : MonoBehaviour
 
         // Get the text until the caret position
         string textUntilCaret = _inputField.text.Substring(0, caretPosition);
-
-        int lineNumber = 1;
-
+        int num = 0;
         // Geriye doðru imlecin olduðu satýrýn baþýna kadar git
-        for (int i = caretPosition - 1; i >= 0; i--)
+        for (int i = caretPosition - 1; (i >= 0 && textUntilCaret[i] != '\n'); i--)
         {
-            // Eðer bulunduðumuz karakter '\n' ise (yani satýrbaþý ise), lineNumber'ý arttýr
-            Debug.Log("1.for ");
-            int num=0;
             if (textUntilCaret[i] == '-')
             {
-                Debug.Log("1.if ");
-                for (int k = i; textUntilCaret[i] != '\n'; k--)
+                for (int k = i; (textUntilCaret[k] != '\n' && k>0); k--)
                 {
                     num++;
+                    if (k==1)
+                    {
+                        num++;
+                    }
                 }
+                num--;
+                Debug.Log("Num : " + num);
                 break;
             }
-            Debug.Log("Num : "+ num);
-            //       \n100-)asfdasf
-            // Eðer bulunduðumuz karakter '-' ise, döngüyü sonlandýr
-            
         }
-
-        Debug.Log("Caret is on line: " + lineNumber);
+        //Debug.Log("Döngü bitti güncel num deðeri : "+ num);
     }
 
     public void ResetCaretPositionToDefault(int value)

@@ -11,7 +11,7 @@ public class BasicComputerCommands : MonoBehaviour
     int IR = 0; // Instruction register
     int E = 0; //
     int PC = 0; //Program counter
-    int S = 0;
+    //int S = 0;
     string binaryNumber;
 
     public void IntToBin(long intNum)// 10'luk sayý sisteminden 2'lik sayý sistemine dönüþtürme
@@ -188,9 +188,9 @@ public class BasicComputerCommands : MonoBehaviour
             PC++;
         }
     }
-    public void HLT(){
+    /*public void HLT(){
         S = 0;
-    }
+    }*/
     public void print()
     {
         string binDR = Convert.ToString(DR, 2);
