@@ -1,18 +1,23 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Line : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
+    private int _lineNumber;
+    public int lineNumber 
+    { 
+        get => _lineNumber;
+        set => _lineNumber = value;
     }
 
-    // Update is called once per frame
-    void Update()
+    public Text lineNumberText;
+    public Text dataText;
+    private void Start()
     {
-        
+        lineNumberText.text = _lineNumber + "-)";
+    }
+    public string GetData()
+    {
+        return dataText.text;
     }
 }

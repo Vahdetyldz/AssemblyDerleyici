@@ -7,26 +7,39 @@ public class LineManager : MonoBehaviour
     [SerializeField]
     private Line _linePrefab;
     [SerializeField]
+    private Transform _linesGroup;
+    [SerializeField]
     private int _initialLineCount;
 
-    private List<Line> _lines = new List<Line>();
-
+    public List<Line> _lines = new List<Line>();
     private void Start()
     {
-        //Add initial lines.
-        for (int i = 0; i < _initialLineCount; i++)
-        {
-            var line = Instantiate(_linePrefab);
-            line.transform.parent = this.transform;
+        //Add initial lines to list.
+        AddLine(_initialLineCount);
+    }
 
-            _lines.Add(line);
+    private void Update()
+    {
+        EnterState();
+    }
+
+    public void EnterState()
+    {
+        if (Input.GetKeyDown(KeyCode.Return))
+        {
+            AddLine();
         }
     }
 
     public void AddLine()
     {
         var line = Instantiate(_linePrefab);
-        line.transform.parent = this.transform;
+        line.transform.SetParent(_linesGroup);
+        line.transform.localScale =
+            new Vector3(_linePrefab.transform.localScale.x, _linePrefab.transform.localScale.y, _linePrefab.transform.localScale.z);
+
+        //Add line number in the first.
+        line.lineNumber = _lines.Count + 1;
 
         _lines.Add(line);
     }
@@ -35,10 +48,7 @@ public class LineManager : MonoBehaviour
     {
         for (int i = 0; i < count; i++)
         {
-            var line = Instantiate(_linePrefab);
-            line.transform.parent = this.transform;
-
-            _lines.Add(line);
+            AddLine();
         }
     }
 }
