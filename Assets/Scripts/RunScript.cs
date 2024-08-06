@@ -14,6 +14,9 @@ public class RunScript : MonoBehaviour
     string[] komut;
     string[] arguman;
     string[] arguman2;
+
+    public CompilerConsole compilerConsole;
+
     private void Start()
     {
         runButton.onClick.AddListener(Main);
@@ -27,6 +30,14 @@ public class RunScript : MonoBehaviour
         komut = new string[liste.Count];
         arguman = new string[liste.Count];
         arguman2 = new string[liste.Count];
+        bool Error = false;
+        string data="";
+
+        for (int i = 0; i < _lineManager._lines.Count; i++)//text rengi ilk haline çevirme (Metin giriþi)
+        {
+            _lineManager._lines[i].SetTextColor("black");
+        }
+        compilerConsole.SetInputFieldColor("black");//text rengi ilk haline çevirme (Consol)
 
         for (int i = 0; i < liste.Count; i++)//Hata sýnýfý oluþturup hatalarý orada kontrol et
         {
@@ -36,186 +47,223 @@ public class RunScript : MonoBehaviour
                 char c = item[j];
                 if (Array.IndexOf(karakterDizisi, c) == -1)
                 {
-                    Debug.Log("Hata: " + "r:" + (i + 1) + " c: " + (j + 1) + "\ngeçersiz karakter bulundu: " + c);
+                    data += "Hata: "+"\n" + "r:" + (i + 1) + " c: " + (j + 1) + "\ngeçersiz karakter bulundu: " + c + "\n";
+                    Error = true;
                 }
             }
         }
-        for (int i = 0; i < liste.Count; i++)
+        if (!Error)
         {
-            tokens = liste[i].Split(new char[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries); // Satýrý boþluklardan ve virgüllerden ayýrarak komut ve argümanlarý al
-            if (tokens.Length > 0) komut[i] = tokens[0];
-            if (tokens.Length > 1) arguman[i] = tokens[1];
-            if (tokens.Length > 2) arguman2[i] = tokens[2];
-        }
+            for (int i = 0; i < liste.Count; i++)
+            {
+                tokens = liste[i].Split(new char[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries); // Satýrý boþluklardan ve virgüllerden ayýrarak komut ve argümanlarý al
+                if (tokens.Length > 0) komut[i] = tokens[0];
+                if (tokens.Length > 1) arguman[i] = tokens[1];
+                if (tokens.Length > 2) arguman2[i] = tokens[2];
+                if (!IsThreeCharacters(komut[i]))
+                {
+                    data += "r: "+(i+1)+" "+komut[i] + "\n";
+                    _lineManager._lines[i].SetTextColor("red");
+                   Error = true;
+                }
+            }
+            
+            if (Error)
+            {
+                data = "Hata : \n" + data;
+                compilerConsole.SetInputFieldColor("red");
+                compilerConsole.SetInputFieldData(data);
+                return;
+            }
+            for (_bCC.PC = 0; _bCC.PC < liste.Count; _bCC.PC++)
+            {
+                switch (komut[_bCC.PC])//koþul
+                {
+                    case "AND":
+                        _bCC.AND(FindVariable(arguman[_bCC.PC]));
+                        break;
+                    case "ADD":
+                        _bCC.ADD(FindVariable(arguman[_bCC.PC]));
+                        break;
+                    case "LDA":
+                        if (arguman[_bCC.PC] == "VA1")
+                        {
+                            Console.WriteLine("LDA AC =" + arguman[_bCC.PC]);
+                        }
+                        _bCC.LDA(FindVariable(arguman[_bCC.PC]));
+                        if (arguman[_bCC.PC] == "VA1")
+                        {
+                            Console.WriteLine("LDA AC =" + _bCC.AC);
+                        }
+                        break;
+                    case "STA":
+                        if (arguman[ChangeVariable(arguman[_bCC.PC])] == "HEX")
+                        {
+                            arguman2[ChangeVariable(arguman[_bCC.PC])] = _bCC.AC.ToString("X");
+                        }
+                        else if (arguman[ChangeVariable(arguman[_bCC.PC])] == "DEC")
+                        {
+                            arguman2[ChangeVariable(arguman[_bCC.PC])] = _bCC.AC.ToString();
+                        }
+                        break;
+                    case "BUN":
+                        if (arguman2[_bCC.PC] == "I")
+                        {
+                            _bCC.PC = int.Parse(arguman2[FindFonk(arguman[_bCC.PC])]);
+                        }
+                        else
+                        {
+                            _bCC.BUN(FindVariable(arguman[_bCC.PC]) - 1);
+                        }
+                        break;
+                    case "BSA":
+                        arguman2[FindFonk(arguman[_bCC.PC])] = (_bCC.PC).ToString();
+                        _bCC.PC = FindFonk(arguman[_bCC.PC]);
+                        break;
+                    case "ISZ":
 
-        for (_bCC.PC = 0; _bCC.PC < liste.Count; _bCC.PC++)
+                        if (arguman[ChangeVariable(arguman[_bCC.PC])] == "HEX")
+                        {
+                            _bCC.DR = int.Parse(arguman2[ChangeVariable(arguman[_bCC.PC])], NumberStyles.HexNumber);
+                            arguman2[ChangeVariable(arguman[_bCC.PC])] = _bCC.ISZ().ToString("X");
+                        }
+                        else if (arguman[ChangeVariable(arguman[_bCC.PC])] == "DEC")
+                        {
+                            _bCC.DR = int.Parse(arguman2[ChangeVariable(arguman[_bCC.PC])]);
+                            arguman2[ChangeVariable(arguman[_bCC.PC])] = _bCC.ISZ().ToString();
+                        }
+                        break;
+                    case "CLA":
+                        _bCC.CLA();
+                        break;
+                    case "CLE":
+                        _bCC.CLE();
+                        break;
+                    case "CMA":
+                        _bCC.CMA();
+                        break;
+                    case "CME":
+                        _bCC.CME();
+                        break;
+                    case "CIR":
+                        _bCC.CIR();
+                        break;
+                    case "CIL":
+                        _bCC.CIL();
+                        break;
+                    case "INC":
+                        _bCC.INC();
+                        break;
+                    case "SPA":
+                        _bCC.SPA();
+                        break;
+                    case "SNA":
+                        _bCC.SNA();
+                        break;
+                    case "SZA":
+                        _bCC.SZA();
+                        break;
+                    case "SZE":
+                        _bCC.SZE();
+                        break;
+                    case "HLT":
+                        shouldStop = true;
+                        break;
+                    default:
+                        switch (arguman[_bCC.PC])
+                        {
+                            case "AND":
+                                _bCC.AND(FindVariable(arguman[_bCC.PC]));
+                                break;
+                            case "ADD":
+                                _bCC.ADD(FindVariable(arguman2[_bCC.PC]));
+                                break;
+                            case "LDA":
+                                _bCC.LDA(FindVariable(arguman[_bCC.PC]));
+                                break;
+                            case "STA":
+                                break;
+                            case "BUN":
+                                _bCC.BUN(FindVariable(arguman[_bCC.PC]));
+                                break;
+                            case "BSA":
+                                break;
+                            case "ISZ":
+                                break;
+                            case "CLA":
+                                _bCC.CLA();
+                                break;
+                            case "CLE":
+                                _bCC.CLE();
+                                break;
+                            case "CMA":
+                                _bCC.CMA();
+                                break;
+                            case "CME":
+                                _bCC.CME();
+                                break;
+                            case "CIR":
+                                _bCC.CIR();
+                                break;
+                            case "CIL":
+                                _bCC.CIL();
+                                break;
+                            case "INC":
+                                _bCC.INC();
+                                break;
+                            case "SPA":
+                                _bCC.SPA();
+                                break;
+                            case "SNA":
+                                _bCC.SNA();
+                                break;
+                            case "SZA":
+                                _bCC.SZA();
+                                break;
+                            case "SZE":
+                                _bCC.SZE();
+                                break;
+                            case "HLT":
+                                shouldStop = true;
+                                break;
+                            default:
+                                Console.WriteLine("404"); //Hata yazýcak burada
+                                break;
+                        }
+                        break;
+
+                }
+                if (shouldStop) //Bayrak true ise döngüden çýk
+                {
+                    break;
+                }
+            }
+
+            _bCC.PC++;
+            string binAC = Convert.ToString(_bCC.AC, 2);
+            string binE = Convert.ToString(_bCC.E, 2);
+            string binPC = Convert.ToString(_bCC.PC, 2);
+
+            data = "OUTPUT : \n" + "AC : " + binAC + "\n" + "E : " + binE + "\n" + "PC : " + binPC + "\n" + "---------------" + "\n" + "AC : " + _bCC.AC + "\n" + "E : " + _bCC.E + "\n" + "PC : " + _bCC.PC + "\n";
+            data += "---------------" + "\n";
+
+            for (int i = 0; i < liste.Count; i++)
+            {
+                if (arguman[i] == "HEX" | arguman[i] == "DEC")
+                {
+                    //Debug.Log(komut[i] + ": " + arguman2[i]);
+                    data += komut[i] + ": " + arguman2[i] + "\n";
+                }
+            }
+            compilerConsole.SetInputFieldData(data);
+        }
+        else if(Error)
         {
-            switch (komut[_bCC.PC])//koþul
-            {
-                case "AND":
-                    _bCC.AND(FindVariable(arguman[_bCC.PC]));
-                    break;
-                case "ADD":
-                    _bCC.ADD(FindVariable(arguman[_bCC.PC]));
-                    break;
-                case "LDA":
-                    if (arguman[_bCC.PC] == "VA1")
-                    {
-                        Console.WriteLine("LDA AC =" + arguman[_bCC.PC]);
-                    }
-                    _bCC.LDA(FindVariable(arguman[_bCC.PC]));
-                    if (arguman[_bCC.PC] == "VA1")
-                    {
-                        Console.WriteLine("LDA AC =" + _bCC.AC);
-                    }
-                    break;
-                case "STA":
-                    if (arguman[ChangeVariable(arguman[_bCC.PC])] == "HEX")
-                    {
-                        arguman2[ChangeVariable(arguman[_bCC.PC])] = _bCC.AC.ToString("X");
-                    }
-                    else if (arguman[ChangeVariable(arguman[_bCC.PC])] == "DEC")
-                    {
-                        arguman2[ChangeVariable(arguman[_bCC.PC])] = _bCC.AC.ToString();
-                    }
-                    break;
-                case "BUN":
-                    if (arguman2[_bCC.PC] == "I")
-                    {
-                        _bCC.PC = int.Parse(arguman2[FindFonk(arguman[_bCC.PC])]);
-                    }
-                    else
-                    {
-                        _bCC.BUN(FindVariable(arguman[_bCC.PC]) - 1);
-                    }
-                    break;
-                case "BSA":
-                    arguman2[FindFonk(arguman[_bCC.PC])] = (_bCC.PC).ToString();
-                    _bCC.PC = FindFonk(arguman[_bCC.PC]);
-                    break;
-                case "ISZ":
-
-                    if (arguman[ChangeVariable(arguman[_bCC.PC])] == "HEX")
-                    {
-                        _bCC.DR = int.Parse(arguman2[ChangeVariable(arguman[_bCC.PC])], NumberStyles.HexNumber);
-                        arguman2[ChangeVariable(arguman[_bCC.PC])] = _bCC.ISZ().ToString("X");
-                    }
-                    else if (arguman[ChangeVariable(arguman[_bCC.PC])] == "DEC")
-                    {
-                        _bCC.DR = int.Parse(arguman2[ChangeVariable(arguman[_bCC.PC])]);
-                        arguman2[ChangeVariable(arguman[_bCC.PC])] = _bCC.ISZ().ToString();
-                    }
-                    break;
-                case "CLA":
-                    _bCC.CLA();
-                    break;
-                case "CLE":
-                    _bCC.CLE();
-                    break;
-                case "CMA":
-                    _bCC.CMA();
-                    break;
-                case "CME":
-                    _bCC.CME();
-                    break;
-                case "CIR":
-                    _bCC.CIR();
-                    break;
-                case "CIL":
-                    _bCC.CIL();
-                    break;
-                case "INC":
-                    _bCC.INC();
-                    break;
-                case "SPA":
-                    _bCC.SPA();
-                    break;
-                case "SNA":
-                    _bCC.SNA();
-                    break;
-                case "SZA":
-                    _bCC.SZA();
-                    break;
-                case "SZE":
-                    _bCC.SZE();
-                    break;
-                case "HLT":
-                    shouldStop = true;
-                    break;
-                default:
-                    switch (arguman[_bCC.PC])
-                    {
-                        case "AND":
-                            _bCC.AND(FindVariable(arguman[_bCC.PC]));
-                            break;
-                        case "ADD":
-                            _bCC.ADD(FindVariable(arguman2[_bCC.PC]));
-                            break;
-                        case "LDA":
-                            _bCC.LDA(FindVariable(arguman[_bCC.PC]));
-                            break;
-                        case "STA":
-                            break;
-                        case "BUN":
-                            _bCC.BUN(FindVariable(arguman[_bCC.PC]));
-                            break;
-                        case "BSA":
-                            break;
-                        case "ISZ":
-                            break;
-                        case "CLA":
-                            _bCC.CLA();
-                            break;
-                        case "CLE":
-                            _bCC.CLE();
-                            break;
-                        case "CMA":
-                            _bCC.CMA();
-                            break;
-                        case "CME":
-                            _bCC.CME();
-                            break;
-                        case "CIR":
-                            _bCC.CIR();
-                            break;
-                        case "CIL":
-                            _bCC.CIL();
-                            break;
-                        case "INC":
-                            _bCC.INC();
-                            break;
-                        case "SPA":
-                            _bCC.SPA();
-                            break;
-                        case "SNA":
-                            _bCC.SNA();
-                            break;
-                        case "SZA":
-                            _bCC.SZA();
-                            break;
-                        case "SZE":
-                            _bCC.SZE();
-                            break;
-                        case "HLT":
-                            shouldStop = true;
-                            break;
-                        default:
-                            Console.WriteLine("404"); //Hata yazýcak burada
-                            break;
-                    }
-                    break;
-
-            }
-            if (shouldStop) //Bayrak true ise döngüden çýk
-            {
-                break;
-            }
+            compilerConsole.SetInputFieldData(data);
         }
-
-        _bCC.PC++;
-        _bCC.print();
-        Debug.Log("-------------------------");
+        
     }
+
     int FindVariable(string arg)
     {
         int number = 0;
@@ -271,16 +319,25 @@ public class RunScript : MonoBehaviour
         }
         return number;
     }
-    /*public void Clear()
+    bool IsThreeCharacters(string input)
     {
-        
-    }*/
+        // String'in uzunluðunu kontrol eder
+        if (input.Length <= 3)
+        {
+            return true; // Eðer 3 karakter ise true döner
+        }
+        else
+        {
+            return false; // 3 karakter deðilse false döner
+        }
+    }
+
     private void GetLineData()
     {
+        liste.Clear();
         for (int i = 0; i < _lineManager._lines.Count; i++)
         {
             liste.Add(_lineManager._lines[i].GetData()) ;
-            
         }
         /*for (int i = 0; _lineManager._lines[i].GetData()!=null; i++)
         {

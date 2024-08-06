@@ -5,6 +5,6 @@ public class Run : MonoBehaviour
 {
     public void RunScript(string value)
     {
-        Debug.Log(value);
+        Debug.Log("Nedir bu value : "+value);
     }
 }

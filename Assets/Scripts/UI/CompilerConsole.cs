@@ -1,33 +1,23 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-
-public class Line : MonoBehaviour
+public class CompilerConsole : MonoBehaviour
 {
-    private int _lineNumber;
+    private InputField _inputField;
     public Color textColorRed = Color.red;
     public Color textColorBlack = Color.black;
-    public int lineNumber 
-    { 
-        get => _lineNumber;
-        set => _lineNumber = value;
+
+    void Start()
+    {
+        _inputField = GetComponent<InputField>();
     }
 
-    public Text lineNumberText;
-
-    public InputField _inputField;
-    private void Start()
-    {
-        lineNumberText.text = _lineNumber + "-)";
-    }
-    public string GetData()
-    {
-        return _inputField.text;
-    }
-    public void SetData(string data)
+    public void SetInputFieldData(string data)
     {
         _inputField.text = data;
     }
-    public void SetTextColor(string color)
+    public void SetInputFieldColor(string color)
     {
         switch (color)
         {
@@ -38,5 +28,6 @@ public class Line : MonoBehaviour
                 _inputField.textComponent.color = textColorBlack;
                 break;
         }
+        
     }
 }
